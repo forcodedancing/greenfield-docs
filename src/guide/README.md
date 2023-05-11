@@ -14,7 +14,7 @@ technology on data ownership and the data economy.
 Dive into what is BNB Greenfield and start the journey with Greenfield.
 
 - [An overview about BNB Greenfield](introduction/overview.md)
-- [Get Started with detailed tutorial](get-started.md)
+- [Get Started with detailed tutorial](getting-started/overview.md)
 
 ## Explore the Greenfield Blockchain
 
