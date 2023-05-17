@@ -55,17 +55,17 @@ as its EC strategy, the default data blocks are 4, and the default parity blocks
 * After EC encoding with the segment, the EC encoding module will generate six EC chunk pieces. 
 All the EC chunk pieces of the segment will be stored to the six chosen secondary SPs.
 
-For example, when processing a 32MB file, the object will split it into two segments. 
-These two segments will be stored in the primary storage provider (SP), 
-and each segment will be encoded using erasure coding (EC) to generate six pieces which is 4MB. 
-These six pieces will be stored in six secondary storage providers (SPs) in numerical order.
+
+For example, when processing a 32MB file, the object is split into two segments. These two segments are stored in the primary storage provider, and each segment is encoded using erasure coding to generate six 4MB pieces. These six pieces are stored in six secondary storage providers in numerical order.
+
+
 
 ## Integrity Hash
-The integrity hashes include a root hash of primary SP and several root hashes for each secondary SP which
+The integrity hashes include a root hash of the primary SP and several root hashes for each secondary SP which
 based on the EC strategy. The number of secondary hashes is equal dataBlocks plus parityBlock
 (it is six for now). Each piece's hash is computed
 by using hash algorithm (default is sha256) on the data piece's content. The pieces' root hash is computed based
-on all the pieces' hashes.The pieces' root hash is part of object metadata on the Greenfield blockchain.
+on all the pieces' hashes.
 
 The calculation process can be represented as follows:
 ```
