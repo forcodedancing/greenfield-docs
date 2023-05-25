@@ -19,7 +19,7 @@ Stop Serving is running in background periodically. The main workflows are as fo
 
 * Then it sends discontinue bucket transactions to the Greenfield chain, and the blockchain will emit discontinue bucket events;
 
-* After a set amount of time, the discontinued buckets are deleted on the chain, and delete object and delete bucket events are emitted;
+* After a set amount of time (7 days on testnet), the discontinued buckets are deleted on the chain, and delete object and delete bucket events are emitted;
 
 * Finally, the GC service recycles the storage space of the deleted objects and buckets. 
 

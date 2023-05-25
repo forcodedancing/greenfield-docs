@@ -68,7 +68,7 @@ cd greenfield-storage-provider/build
 
 ```toml
 # start service list
-Service = ["gateway", "uploader", "downloader", "challenge", "tasknode", "receiver", "signer", "blocksyncer", "metadata", "manager"]
+Service = ["gateway", "uploader", "downloader", "challenge", "tasknode", "receiver", "signer", "blocksyncer", "metadata", "manager", "stopserving"]
 # sp operator address 
 SpOperatorAddress = ""
 # service endpoint for other to connect
@@ -168,7 +168,7 @@ Enable = false
 R = 100
 B = 1000
 # stop serving configuration
-[StopServingCfg]
+[DiscontinueCfg]
 BucketKeepAliveDays = 7
 # metadata configuration
 [MetadataCfg]
