@@ -129,7 +129,8 @@ module. The `StaticBalance` in the `StreamRecord` data struct will be
 will be netted with `DeltaBalance`. Then the deposit and withdrawal number
 will try to add/reduce the `StaticBalance` in the record. If the static
 balance is less than the withdrawal amount, the withdrawal will fail. If
-the withdrawal amount is too large, it will be timelock-ed for some duration.
+the withdrawal amount is equal to or greater than 100BNB, it will be 
+timelock-ed for 1 day duration.
 
 Deposit and withdrawal via cross-chain will also be supported to enable
 users to deposit and withdraw from BSC directly.
