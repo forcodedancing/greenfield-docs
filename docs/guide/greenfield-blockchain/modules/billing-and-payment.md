@@ -128,7 +128,8 @@ module. The `StaticBalance` in the `StreamRecord` data struct will be
 "settled" first: the `CRUDTimeStamp` will be updated and `StaticBalance`
 will be netted with `DeltaBalance`. Then the deposit and withdrawal number
 will try to add/reduce the `StaticBalance` in the record. If the static
-balance is less than the withdrawal amount, the withdrawal will fail.
+balance is less than the withdrawal amount, the withdrawal will fail. If
+the withdrawal amount is too large, it will be timelock-ed for some duration.
 
 Deposit and withdrawal via cross-chain will also be supported to enable
 users to deposit and withdraw from BSC directly.
@@ -435,6 +436,13 @@ message Params {
   uint64 max_auto_resume_flow_count = 5 [(gogoproto.moretags) = "yaml:\"max_auto_resume_flow_count\""];
   // The denom of fee charged in payment module
   string fee_denom = 6 [(gogoproto.moretags) = "yaml:\"fee_denom\""];
+    // The withdrawal amount threshold to trigger time lock
+  string withdraw_time_lock_threshold = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int"
+  ];
+  // The duration of the time lock for a big amount withdrawal
+  uint64 withdraw_time_lock_duration = 8 [(gogoproto.moretags) = "yaml:\"withdraw_time_lock_duration\""];
 }
 
 // VersionedParams defines the parameters with multiple versions, each version is stored with different timestamp.
@@ -450,14 +458,16 @@ message VersionedParams {
 }
 ```
 
-|             Key             |  Type  |       Example       |
-|:---------------------------:|:------:|:-------------------:|
-|        reserve_time         | uint64 | 15552000 (180 days) |
-| payment_account_count_limit | uint64 |         200         |
-|     forced_settle_time      | uint64 |   604800 (7 days)   |
-| max_auto_settle_flow_count  | uint64 |         100         |
-| max_auto_resume_flow_count  | uint64 |         100         |
-|          fee_denom          | string |         BNB         |
+|             Key              |  Type  |       Example       |
+|:----------------------------:|:------:|:-------------------:|
+|         reserve_time         | uint64 | 15552000 (180 days) |
+| payment_account_count_limit  | uint64 |         200         |
+|      forced_settle_time      | uint64 |   604800 (7 days)   |
+|  max_auto_settle_flow_count  | uint64 |         100         |
+|  max_auto_resume_flow_count  | uint64 |         100         |
+|          fee_denom           | string |         BNB         |
+| withdraw_time_lock_threshold |  Int   |      100*1e18       |
+| withdraw_time_lock_duration  | uint64 |    86400 (1 day)    |
 
 ## Payment Module Keepers
 
@@ -516,6 +526,12 @@ message MsgDeposit {
 ### MsgWithdraw
 
 Used to withdraw BNB tokens from a stream account.
+
+When the withdrawal amount is too large (i.e. equal to or greater than `withdraw_time_lock_threshold`, which is defined
+as a payment parameter), the withdrawal will be timelock-ed for a specific duration (i.e. `withdraw_time_lock_duration`
+seconds, which is also defined as a payment parameter), and after the duration the user can withdraw the locked amount
+by sending a message without `from` field. For example, on testnet, when withdrawal amount is equal to or greater than
+100 BNB, the withdrawal will be locked for 1 day duration.
 
 ```
 message MsgWithdraw {
