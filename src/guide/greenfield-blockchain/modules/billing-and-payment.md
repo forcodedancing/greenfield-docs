@@ -5,7 +5,8 @@ order: 3
 
 # Billing and Payment
 
-If you need a remind on the different type of fees, we invite you to the [following page](../../concept/billing-payment.md).
+If you need a reminder on the different type of fees, we invite you to
+the [following page](../../concept/billing-payment.md).
 
 The fees are paid on Greenfield in the style of
 `Stream` from users to the SPs at a constant rate. The fees are charged
@@ -24,9 +25,9 @@ elapses.
 ### Terminology
 
 - **Payment Module:** This module is a special ledger system designed
- to manage billing and payments on the Greenfield blockchain. 
- Funds will be deposited or charged into it from users' balance or 
- payment accounts via the Payment Module;
+  to manage billing and payments on the Greenfield blockchain.
+  Funds will be deposited or charged into it from users' balance or
+  payment accounts via the Payment Module;
 
 - **Stream Account**: The Payment Module has its own ledger for
   billing management. Users can deposit and withdraw funds into
@@ -58,7 +59,7 @@ elapses.
 
 - **Receiver**: The stream account on the receiving end of one or more payment streams.
 
-- **CRUD Timestamp**: The timestamp that indicates when a user 
+- **CRUD Timestamp**: The timestamp that indicates when a user
   creates, updates, or deletes a payment stream;
 
 - **Delta Balance**: The amount of the stream account's balance that has
@@ -126,7 +127,9 @@ module. The `StaticBalance` in the `StreamPayment` data struct will be
 "settled" first: the `CRUDTimeStamp` will be updated and `StaticBalance`
 will be netted with `DeltaBalance`. Then the deposit and withdrawal number
 will try to add/reduce the `StaticBalance` in the record. If the static
-balance is less than the withdrawal amount, the withdrawal will fail.
+balance is less than the withdrawal amount, the withdrawal will fail. If
+the withdrawal amount is too large, it will be timelock-ed for some duration
+and then released.
 
 Deposit and withdrawal via cross-chain will also be supported to enable
 users to deposit and withdraw from BSC directly.
@@ -165,9 +168,9 @@ If a user doesn't deposit for a long time, his previous deposit may be
 all used up for the stored objects. Greenfield has a forced settlement
 mechanism to ensure enough funds are secured for further service fees.
 
-There are two configurations, `ReserveTime` and `ForcedSettleTime`. 
+There are two configurations, `ReserveTime` and `ForcedSettleTime`.
 
-Let's take an example where the `ReserveTime` is 7 days and the `ForcedSettleTime` is 1 day. 
+Let's take an example where the `ReserveTime` is 7 days and the `ForcedSettleTime` is 1 day.
 If a user wants to store an object at the price of
 approximately $0.1 per month($0.00000004/second), he must reserve fees
 for 7 days in the buffer balance, which is `$0.00000004 * 7 * 86400 =
@@ -282,11 +285,13 @@ is resumed.
 
 The storage fee prices are determined by the SPs who supply the storage service.
 The cost of the SPs are composed of 3 parts:
+
 - The primary SP will store the whole object file;
 - The secondary SPs will store part of the object file as a replica;
 - The primary SP will supply all the download requests of the object.
 
 There are 3 different on-chain prices:
+
 - Primary SP Store Price;
 - Primary SP Read Price;
 - Secondary SP Store Price.
@@ -296,19 +301,20 @@ While the secondary SP store price is calculated by averaging all SPs' store pri
 
 The unit of price is a decimal, which indicates wei BNB per byte per second.
 E.g. the price is 0.027, means approximately $0.022 / GB / Month.
-(`0.027 * (30 * 86400) * (1024 * 1024 * 1024) * 300 / 10 ** 18 ≈ 0.022`, assume the BNB price is 300 USD) 
+(`0.027 * (30 * 86400) * (1024 * 1024 * 1024) * 300 / 10 ** 18 ≈ 0.022`, assume the BNB price is 300 USD)
 
 The storage fees are calculated and charged in bucket level.
 The store price and read price is up to the SP of bucket.
 The secondary store price is stored in the chain state and the same for all buckets.
 The total size of all objects and per secondary SP served size in a bucket will be recorded in the bucket metadata.
-The charge size will be used instead of the real size, e.g. files under 1KB will be charged as 1KB to cover the cost. 
+The charge size will be used instead of the real size, e.g. files under 1KB will be charged as 1KB to cover the cost.
 The payment bill will be calculated by the size statistics and prices, and it will be charged from
 the stream account specified in the bucket to the SPs.
 
 ## Payment States
 
 The payment module keeps state of the following primary objects:
+
 - The stream payment ledger;
 - The payment accounts and total account created by users;
 - An AutoSettleRecord list to keep track of the auto-settle timestamp of the stream accounts.
@@ -373,29 +379,40 @@ they can be updated with governance.
 
 ```
 message Params {
-  // Time duration which the buffer balance need to be reserved for NetOutFlow e.g. 6 month
-  uint64 reserve_time = 1 [(gogoproto.moretags) = "yaml:\"reserve_time\""];
+  VersionedParams versioned_params = 1 [(gogoproto.nullable) = false];
   // The maximum number of payment accounts that can be created by one user
   uint64 payment_account_count_limit = 2 [(gogoproto.moretags) = "yaml:\"payment_account_count_limit\""];
   // Time duration threshold of forced settlement.
   // If dynamic balance is less than NetOutFlowRate * forcedSettleTime, the account can be forced settled.
   uint64 forced_settle_time = 3 [(gogoproto.moretags) = "yaml:\"forced_settle_time\""];
-  // the maximum number of accounts that will be forced settled in one block
-  uint64 max_auto_force_settle_num = 4 [(gogoproto.moretags) = "yaml:\"max_auto_force_settle_num\""];
+  // the maximum number of flows that will be auto forced settled in one block
+  uint64 max_auto_settle_flow_count = 4 [(gogoproto.moretags) = "yaml:\"max_auto_settle_flow_count\""];
+  // the maximum number of flows that will be auto resumed in one block
+  uint64 max_auto_resume_flow_count = 5 [(gogoproto.moretags) = "yaml:\"max_auto_resume_flow_count\""];
   // The denom of fee charged in payment module
-  string fee_denom = 5 [(gogoproto.moretags) = "yaml:\"fee_denom\""];
+  string fee_denom = 6 [(gogoproto.moretags) = "yaml:\"fee_denom\""];
+  // The withdrawal amount threshold to trigger time lock
+  string withdraw_time_lock_threshold = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int"
+  ];
+  // The duration of the time lock for a large amount withdrawal
+  uint64 withdraw_time_lock_duration = 8 [(gogoproto.moretags) = "yaml:\"withdraw_time_lock_duration\""];
 }
 ```
 
-|             Key             |  Type  |       Example       |
-|:---------------------------:|:------:|:-------------------:|
-|        reserve_time         | uint64 | 15552000 (180 days) |
-| payment_account_count_limit | uint64 |         200         |
-|     forced_settle_time      | uint64 |   604800 (7 days)   |
-|  max_auto_force_settle_num  | uint64 |         100         |
-|          fee_denom          | string |         BNB         |
+|             Key              |  Type  |       Example       |
+|:----------------------------:|:------:|:-------------------:|
+|         reserve_time         | uint64 | 15552000 (180 days) |
+| payment_account_count_limit  | uint64 |         200         |
+|      forced_settle_time      | uint64 |   604800 (7 days)   |
+|  max_auto_settle_flow_count  | uint64 |         100         |
+|  max_auto_resume_flow_count  | uint64 |         100         |
+|          fee_denom           | string |         BNB         |
+| withdraw_time_lock_threshold |  Int   |      100*1e18       |
+| withdraw_time_lock_duration  | uint64 |    86400 (1 day)    |
 
-## Payment moduel keepers
+## Payment module keepers
 
 The payment module keeper provides access to query the parameters,
 payment account owner, storage price and several ways to update the ledger.
@@ -452,6 +469,12 @@ message MsgDeposit {
 ### MsgWithdraw
 
 Used to withdraw BNB tokens from a stream account.
+
+When the withdrawal amount is too large (i.e. equal to or greater than `withdraw_time_lock_threshold`, which is defined
+as a payment parameter), the withdrawal will be timelock-ed for a specific duration (i.e. `withdraw_time_lock_duration`
+seconds, which is also defined as a payment parameter), and after the duration the user can withdraw the locked amount
+by sending a message without `from` field. For example, on testnet, when withdrawal amount is equal to or greater than 
+100 BNB, the withdrawal will be locked for 1 day duration.
 
 ```
 message MsgWithdraw {
