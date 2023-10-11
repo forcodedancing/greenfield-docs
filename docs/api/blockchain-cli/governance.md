@@ -28,9 +28,28 @@ gnfd query gov proposal ${proposal_id} --node ${node}
 
 ${proposal_id} specifies the id of the proposal you want to query.
 
-To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+${node} is the rpc address of a Greenfield node.
 
-to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs
+defaultValue="mainnet"
+values={[
+{label: 'Mainnet', value: 'mainnet'},
+{label: 'Testnet', value: 'testnet'},
+]}>
+<TabItem value="mainnet">
+
+	node = "https://greenfield-chain.bnbchain.org:443"
+
+  </TabItem>
+  <TabItem value="testnet">
+
+	node = "https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443"
+
+  </TabItem>
+</Tabs>
 
 #### Submit a Proposal
 

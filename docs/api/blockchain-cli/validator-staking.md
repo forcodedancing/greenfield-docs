@@ -35,9 +35,28 @@ ${coins} defines the coins you want to grant, for example, `10000000000000000000
 
 ${valAddr} defines the address of the validator you want to create.
 
-For mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+${node} is the rpc address of a Greenfield node.
 
-for testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs
+defaultValue="mainnet"
+values={[
+{label: 'Mainnet', value: 'mainnet'},
+{label: 'Testnet', value: 'testnet'},
+]}>
+<TabItem value="mainnet">
+
+	node = "https://greenfield-chain.bnbchain.org:443"
+
+  </TabItem>
+  <TabItem value="testnet">
+
+	node = "https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443"
+
+  </TabItem>
+</Tabs>
 
 Example:
 

@@ -27,9 +27,29 @@ gnfd q bank balances ${receiver} --node ${node}
 
 You can specify any valid address you want to query via ${receiver}.
 
-To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
 
-to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+${node} is the rpc address of a Greenfield node.
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs
+defaultValue="mainnet"
+values={[
+{label: 'Mainnet', value: 'mainnet'},
+{label: 'Testnet', value: 'testnet'},
+]}>
+<TabItem value="mainnet">
+
+	node = "https://greenfield-chain.bnbchain.org:443"
+
+  </TabItem>
+  <TabItem value="testnet">
+
+	node = "https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443"
+
+  </TabItem>
+</Tabs>
 
 ### Send
 
