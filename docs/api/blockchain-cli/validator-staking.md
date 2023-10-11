@@ -141,7 +141,7 @@ gnfd tx gov vote 1 yes --from mykey
 Once the proposal's voting period is over, the votes for the create-validator proposal would be tallied. If the proposal
 is passed, the create-validator message in the proposal would be executed automatically.
 
-### Steps for impeaching a malicious validator.
+### Impeach a Malicious Validator
 
 If a validator doesn't behave well, anyone can submit an impeach-validator proposal, if the proposal adopted by the
 majority of the current validators, the malicious validator would be jailed forever.
