@@ -5,22 +5,41 @@ order: 5
 # Cross Chain Transfer
 
 ## Abstract
-The bridge module is responsible for handling the BNB transfers between greenfield and BSC.
+The bridge module is responsible for handling the BNB transfers between Greenfield and BSC.
 
 Users can transfer BNB to BSC via gnfd command, and query the relayer fee for the cross-chain transfers.
 
 ## Quick Start
 
+### Query Relayer Fee
+
+For cross-chain transaction, some amount of fee will be paid to cross-chain relayers.
+
+To query the fees, please use the following command.
+
+```shell
+gnfd q bridge params --node ${node} 
 ```
-## Start a local cluster
-$ bash ./deployment/localup/localup.sh all 3
-$ alias gnfd="./build/bin/gnfd"
-$ receiver=0x32Ff14Fa1547314b95991976DB432F9Aa648A423
-## send 500BNB to the receiver (note the decimal of BNB is 18)
-$ gnfd tx bridge transfer-out validator0 $receiver 500000000000000000000BNB --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
-## query the relayer fees for crosschain transfers
-$ gnfd q bridge params --node tcp://127.0.0.1:26750 
+
+To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+
+to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+
+
+### Transfer from Greenfield to BSC
+
+To transfer funds from Greenfield to BSC, you can use the following command:
+
+```shell
+gnfd tx bridge transfer-out ${key} ${receiver} ${coins} --home ~/.gnfd --node ${node}  -y
 ```
+
+${key} is the name of local key.
+
+${coins} defines the coins you want to transfer, for example, `500000000000000000000BNB`.
+
+${receiver} defines the address on BSC, which will receive the funds.
+
 
 ## Detailed CLI
 
@@ -45,7 +64,7 @@ gnfd query bridge params [flags]
 Example:
 
 ```sh
-gnfd query bridge params --node http://localhost:26750
+gnfd query bridge params --node https://greenfield-chain.bnbchain.org:443
 ```
 
 Example Output:
@@ -66,7 +85,7 @@ gnfd tx bridge --help
 
 #### transfer-out
 
-The `transfer-out` command allows users to send funds between accounts from greenfield to BSC.
+The `transfer-out` command allows users to send funds between accounts from Greenfield to BSC.
 
 ```sh
 gnfd tx bridge transfer-out [from_key_or_address] [to_address] [amount] [flags]
@@ -75,5 +94,5 @@ gnfd tx bridge transfer-out [from_key_or_address] [to_address] [amount] [flags]
 Example:
 
 ```sh
-gnfd tx bridge transfer-out validator0 0x32Ff14Fa1547314b95991976DB432F9Aa648A423 500000000000000000000BNB --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
+gnfd tx bridge transfer-out alice 0x32Ff14Fa1547314b95991976DB432F9Aa648A423 500000000000000000000BNB --home ~/.gnfd --node https://greenfield-chain.bnbchain.org:443  -y
 ```

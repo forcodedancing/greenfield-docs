@@ -11,38 +11,37 @@ The greenfield-cosmos-sdk comes with a built-in keyring module that helps manage
 
 ## Quick Start
 
-To begin, start a local cluster and set up an alias for the gnfd command:
+### Create a New Key
+
+You can use `add` to create a new key with the name you want to use.
 
 ```sh
-## Start a local cluster
-$ bash ./deployment/localup/localup.sh all 3
-$ alias gnfd="./build/bin/gnfd"
+gnfd keys add ${name}
 ```
 
-Next, create a new key with the following command:
+You can replace `${name}` with any name you choose. The command will prompt you to enter a passphrase to encrypt the key.
+
+### Show a Key
+To show information about the key you just created, you can run:
 
 ```sh
-$ gnfd keys add {name} --keyring-backend test --keyring-dir ./deployment/localup/.local/validator0
+gnfd keys show ${name}
 ```
 
-You can replace `{name}` with any name you choose. The command will prompt you to enter a passphrase to encrypt the key.
+### List All Keys
 
-To show information about the key you just created, run:
+To list all existing keys, you can run:
 
 ```sh
-$ gnfd keys show {name} --keyring-backend test --keyring-dir ./deployment/localup/.local/validator0
+gnfd keys list
 ```
 
-To list all existing keys, run:
+### Delete a Key
+
+To delete a key, you can use the following command:
 
 ```sh
-$ gnfd keys list --keyring-backend test --keyring-dir ./deployment/localup/.local/validator0
-```
-
-To delete a key, use the following command:
-
-```sh
-$ gnfd keys delete {name} --keyring-backend test --keyring-dir ./deployment/localup/.local/validator0
+gnfd keys delete ${name}
 ```
 
 ## Detailed CLI
@@ -51,10 +50,10 @@ The following section explains the different commands that can be used with the 
 
 #### add
 
-The `add` command allows users to add a new key with specified name, encrypt it, and save to {name} file.
+The `add` command allows users to add a new key with specified name, encrypt it, and save to ${name} file.
 
 ```sh
-gnfd keys add {name} [flags]
+gnfd keys add ${name} [flags]
 ```
 
 Example:
@@ -83,7 +82,7 @@ position number holiday ... cause bounce mercy
 The `delete` command allows users to delete given keys.
 
 ```sh
-gnfd keys delete {name}... [flags]
+gnfd keys delete ${name}... [flags]
 ```
 
 Example:
@@ -104,7 +103,7 @@ Key deleted forever (uh oh!)
 The `export` command allows users to export private keys.
 
 ```sh
-gnfd keys export {name} [flags]
+gnfd keys export ${name} [flags]
 ```
 
 Example:
@@ -133,7 +132,7 @@ salt: D4AEA1...36B597
 The `import` command allows users to import private keys.
 
 ```sh
-gnfd keys import {name} <keyfile> [flags]
+gnfd keys import ${name} <keyfile> [flags]
 ```
 
 Example:

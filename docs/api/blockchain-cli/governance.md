@@ -4,37 +4,75 @@ order: 7
 ---
 # On-chain Governance
 
+## Abstract
+
+In Greenfield, users can submit proposals for on-chain governance. 
+These proposals can include updates to blockchain parameters or cross-chain configurations, 
+or execution of some messages (e.g., create storage provider). 
+Once a proposal is submitted, it must be accompanied by a deposit that exceeds 
+the `Min Deposit` parameter (which is 10BNB on mainnet).
+If the deposit is not met, the proposal will not be open for voting. 
+However, the submitter is not required to provide the deposit in its entirety. 
+Other users can contribute to the deposit, and if the total deposit exceeds the Min Deposit parameter, 
+the proposal will be open for voting. Then, the proposal will be voted on whether to accept or reject it.
+
 ## Quick Start
 
-Start a local cluster:
+#### Query a Proposal
 
-```sh
-## Start a local cluster
-$ bash ./deployment/localup/localup.sh all 3
-$ alias gnfd="./build/bin/gnfd"
+With the id of a proposal, you can query the details of id by the following command:
 
-## Create a proposal
-$ gnfd tx gov submit-proposal  /path/to/your_file.json  --from 0x7224A7Ad3c484814165baf1d51D1356B014a659B  --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block
-
-## Make a deposit 
-$ gnfd tx gov deposit 1 1000000000000000000BNB  --from 0x7224A7Ad3c484814165baf1d51D1356B014a659B  --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block
-
-## Vote the proposal from validator1
-gnfd tx gov vote 1  yes --from 0x029dF90943a668560529666FEC22e28E40e83c4c  --home ./deployment/localup/.local/validator1 --keyring-backend test --node http://localhost:26750 -b block
-
-## Query the proposal details
-gnfd query gov proposal 1
-
+```shell
+gnfd query gov proposal ${proposal_id} --node ${node}
 ```
 
-## Query
+To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+
+to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+
+#### Submit a Proposal
+
+To submit a proposal, you can use:
+
+```shell
+gnfd tx gov submit-proposal ${proposal_file} --from ${key}  --home ~/.gnfd --node ${node} -y
+```
+
+The proposal you want to execute, e.g., a blockchain message, is defined by the content of ${proposal_file}.
+
+Please refer to [submit proposal](#submit-a-proposal) for some examples.
+
+#### Deposit
+
+Once the proposal is submitted, anyone can deposit to it before expiration.
+
+```shell
+gnfd tx gov deposit ${proposal_id} ${coins} --from ${key} --node ${node} -y
+```
+
+${coins} defines the coins you want to deposit to the proposal, for example `100000BNB`.
+
+#### Vote
+
+To vote a proposal, the following command can be used:
+
+```shell
+gnfd tx gov vote ${proposal_id} ${option} --from ${key} --home ~./gnfd --node ${node} -y
+```
+
+${option} defines whether you want to vote `yes`, `no`, `no_with_veto`, or `abstain`.
+
+
+## Detailed CLI
+
+### Query
 
 The CLI `query` commands allow users to query `gov` state.
 
 ```sh
-$ gnfd query gov help
+gnfd query gov help
 ```
-### deposit
+#### deposit
 
 The `deposit` command allows users to query a deposit for a given proposal from a given depositor.
 
@@ -45,7 +83,7 @@ $  gnfd query gov deposit [proposal-id] [depositer-addr] [flags]
 Example:
 
 ```bash
-$ gnfd query gov deposit 4 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78 
+gnfd query gov deposit 4 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78 
 ```
 
 Example Output:
@@ -58,18 +96,18 @@ depositor: 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78
 proposal_id: "4"
 ```
 
-### deposits
+#### deposits
 
 The `deposits` command allows users to query all deposits for a given proposal.
 
 ```bash
-$ gnfd query gov deposits [proposal-id] [flags]
+gnfd query gov deposits [proposal-id] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov deposits 4
+gnfd query gov deposits 4
 ```
 
 Example Output:
@@ -86,18 +124,18 @@ pagination:
   total: "0"
 ```
 
-### param
+#### param
 
 The `param` command allows users to query a given parameter for the `gov` module.
 
 ```bash
-$ gnfd query gov param [param-type] [flags]
+gnfd query gov param [param-type] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov param deposit
+gnfd query gov param deposit
 ```
 
 Example Output:
@@ -109,19 +147,18 @@ min_deposit:
   denom: BNB
 ```
 
-
-### params
+#### params
 
 The `params` command allows users to query all parameters for the `gov` module.
 
 ```bash
-$ gnfd query gov params [flags]
+gnfd query gov params [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov params
+gnfd query gov params
 ```
 
 Example Output:
@@ -140,19 +177,18 @@ voting_params:
   voting_period: "300000000000"
 ```
 
-
-### proposal
+#### proposal
 
 The `proposal` command allows users to query a given proposal.
 
 ```bash
-$ gnfd query gov proposal [proposal-id] [flags]
+gnfd query gov proposal [proposal-id] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov proposal 6
+gnfd query gov proposal 6
 ```
 
 Example Output:
@@ -186,19 +222,18 @@ voting_end_time: "2023-02-21T11:30:36.733936Z"
 voting_start_time: "2023-02-21T11:25:36.733936Z"
 ```
 
-
-### proposals
+#### proposals
 
 The `proposals` command allows users to query all proposals with optional filters.
 
 ```bash
-$ gnfd query gov proposals [flags]
+gnfd query gov proposals [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov proposals
+gnfd query gov proposals
 ```
 
 Example Output:
@@ -332,18 +367,18 @@ proposals:
   voting_start_time: "2023-02-21T11:25:36.733936Z"
 ```
 
-### proposer
+#### proposer
 
 The `proposer` command allows users to query the proposer for a given proposal.
 
 ```bash
-$ gnfd query gov proposer [proposal-id] [flags]
+gnfd query gov proposer [proposal-id] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov proposer 1
+gnfd query gov proposer 1
 ```
 
 Example Output:
@@ -353,18 +388,18 @@ proposal_id: "6"
 proposer: 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78
 ```
 
-##### tally
+#### tally
 
 The `tally` command allows users to query the tally of a given proposal vote.
 
 ```bash
-$ gnfd query gov tally [proposal-id] [flags]
+gnfd query gov tally [proposal-id] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov tally 1
+gnfd query gov tally 1
 ```
 
 Example Output:
@@ -376,18 +411,18 @@ no_with_veto_count: "0"
 yes_count: "10000000000000000000000000"
 ```
 
-### vote
+#### vote
 
 The `vote` command allows users to query a vote for a given proposal.
 
 ```bash
-$ gnfd query gov vote [proposal-id] [voter-addr] [flags]
+gnfd query gov vote [proposal-id] [voter-addr] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov vote 7 0x8313D43DdA0958e11Fb8840DC75540d0755859F3
+gnfd query gov vote 7 0x8313D43DdA0958e11Fb8840DC75540d0755859F3
 ```
 
 Example Output:
@@ -401,18 +436,18 @@ proposal_id: "7"
 voter: 0x8313D43DdA0958e11Fb8840DC75540d0755859F3
 ```
 
-### votes
+#### votes
 
 The `votes` command allows users to query all votes for a given proposal.
 
 ```bash
-$ gnfd query gov votes [proposal-id] [flags]
+gnfd query gov votes [proposal-id] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd query gov votes 7
+gnfd query gov votes 7
 ```
 
 Example Output:
@@ -430,50 +465,50 @@ votes:
   voter: 0x8313D43DdA0958e11Fb8840DC75540d0755859F3
 ```
 
-## Transactions
+### Transactions
 
 The `tx` commands allow users to interact with the `gov` module.
 
 ```bash
-$ gnfd tx gov --help
+gnfd tx gov --help
 ```
 
-### deposit
+#### deposit
 
 The `deposit` command allows users to deposit tokens for a given proposal.
 
 ```bash
-$ gnfd tx gov deposit [proposal-id] [deposit] [flags]
+gnfd tx gov deposit [proposal-id] [deposit] [flags]
 ```
 
 Example:
 
 ```bash
-$ gnfd tx gov deposit 1 1000000000000000000BNB --from 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78
+gnfd tx gov deposit 1 1000000000000000000BNB --from 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78
 ```
 
-### draft-proposal
+#### draft-proposal
 
 The `draft-proposal` creates a draft for any type of proposal.
 
 ```bash
-$ gnfd tx gov draft-proposal
+gnfd tx gov draft-proposal
 ```
 
-### submit-proposal
+#### submit-proposal
 
 The `submit-proposal` submits a governance proposal along with messages and metadata defined in json file
 
 ```bash
-$ gnfd tx gov submit-proposal [path-to-proposal-json] [flags]
+gnfd tx gov submit-proposal [path-to-proposal-json] [flags]
 ```
 
 Example:
 
-#### Greenfield module parameter change proposal
+##### Greenfield module parameter change proposal
 
 ```bash
-$ gnfd tx gov submit-proposal /path/to/proposal.json --from 0x2737dca53A25120358f4811c762f71712eF23aFE
+gnfd tx gov submit-proposal /path/to/proposal.json --from 0x2737dca53A25120358f4811c762f71712eF23aFE
 ```
 
 ```json
@@ -502,8 +537,7 @@ $ gnfd tx gov submit-proposal /path/to/proposal.json --from 0x2737dca53A25120358
 }
 ```
 
-#### BSC smart contract parameter change  proposal
-
+##### BSC smart contract parameter change proposal
 
 ```json
 {
@@ -533,7 +567,7 @@ $ gnfd tx gov submit-proposal /path/to/proposal.json --from 0x2737dca53A25120358
 ```
 
 
-#### BSC smart contract upgrade proposal
+##### BSC smart contract upgrade proposal
 
 ```json
 {
@@ -568,4 +602,18 @@ $ gnfd tx gov submit-proposal /path/to/proposal.json --from 0x2737dca53A25120358
   "metadata": "4pIMOgIGx1vZGU=",
   "deposit": "1000000000000000000BNB"
 }
+```
+
+#### vote
+
+The `vote` command allows users to submit a vote for a given proposal.
+
+```shell
+gnfd tx gov vote [command] [flags]
+```
+
+Example:
+
+```shell
+gnfd tx gov vote 1 yes --from 0x50508768BD41e5CD4A82A0fBc38C14d3bEA45A78
 ```

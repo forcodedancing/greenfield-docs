@@ -17,26 +17,37 @@ supply of BNB in the application.
 
 ## Quick Start
 
+### Query Balances
+
+To query the balances of an account, you can use the following command.
+
 ```shell
-## Start a local cluster
-$ bash ./deployment/localup/localup.sh all 3
-$ alias gnfd="./build/bin/gnfd"
-$ receiver=0x32Ff14Fa1547314b95991976DB432F9Aa648A423
-## query the balance of receiver
-$ gnfd q bank balances $receiver --node tcp://127.0.0.1:26750 
-## send 500BNB to the receiver (note the decimal of BNB is 18)
-$ gnfd tx bank send validator0 $receiver 500000000000000000000BNB --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
-## query the balance of receiver again
-$ gnfd q bank balances $receiver --node tcp://127.0.0.1:26750 
-## try send some token that does not exit, error is expected.
-$ gnfd tx bank send validator0 $receiver 500000000000000000000ETH --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
-## try multi send, send each 500BNB to both receiver and receiver2
-$ receiver2=0x6d6247501b822fd4eaa76fcb64baea360279497f
-$ gnfd tx bank multi-send validator0 $receiver $receiver2 500000000000000000000BNB --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y --gas 500000
-## query the metadata of BNB
-$ gnfd q bank  denom-metadata --node tcp://127.0.0.1:26750 
-## query the total supply of BNB
-$ gnfd q bank  total    --denom BNB   --node tcp://127.0.0.1:26750 
+gnfd q bank balances ${receiver} --node ${node} 
+```
+
+You can specify any valid address you want to query via ${receiver}.
+
+To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+
+to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+
+### Send
+
+To transfer some coins you can use `send` command.
+```shell
+gnfd tx bank send ${key} ${receiver} ${coins} --home ~/.gnfd --node ${node}  -y
+```
+
+${key} is the name of local key.
+
+${coins} defines the coins you want to transfer, for example, `500000000000000000000BNB`.
+
+### Multi-send
+
+Sometimes, you may want to transfer tokens to multiple people. `multi-send` command can be used for the purpose.
+
+```shell
+gnfd tx bank multi-send ${key} ${receiver1} ${receiver2} ${coins} --home ~/.gnfd --node ${node}  -y
 ```
 
 ## Detailed CLI

@@ -22,7 +22,7 @@ aspects of the commands, such as gas prices or which node to broadcast to.
 Here is an example of a command a user might enter to interact with `gnfd` in order to send some tokens:
 
 ```bash
-$ gnfd tx bank send $MY_VALIDATOR_ADDRESS $RECIPIENT 1000BNB --gas auto
+gnfd tx bank send $MY_VALIDATOR_ADDRESS $RECIPIENT 1000BNB --gas auto
 ```
 
 The first four strings specify the command:
@@ -51,7 +51,7 @@ Here is an example of a `queryCommand`:
 
 ```shell
 ## query the metadata of BNB
-$ gnfd q bank  denom-metadata --node tcp://127.0.0.1:26750
+gnfd q bank denom-metadata --node https://greenfield-chain.bnbchain.org:443
 ```
 
 ## Environment variables
@@ -62,7 +62,7 @@ Each flag is bound to its respective named environment variable. Then name of th
 the amount of flags typed for routine operations. For example instead of:
 
 ```sh
-gnfd --home=./ --node=<node address> --chain-id="testchain-9000" --keyring-backend=test tx ... --from=<key name>
+gnfd --home=./ --node=<node address> --chain-id="greenfield_1017-1" tx ... --from=<key name>
 ```
 
 this will be more convenient:
@@ -71,8 +71,8 @@ this will be more convenient:
 # define env variables in .env, .envrc etc
 GNFD_HOME=<path to home>
 GNFD_NODE=<node address>
-GNFD_CHAIN_ID="testchain-9000"
-GNFD_KEYRING_BACKEND="test"
+GNFD_CHAIN_ID="greenfield_1017-1"
+GNFD_KEYRING_BACKEND="file"
 
 # and later just use
 gnfd tx ... --from=<key name>
