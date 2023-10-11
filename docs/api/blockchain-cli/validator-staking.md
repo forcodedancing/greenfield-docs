@@ -5,28 +5,181 @@ Order: 8
 
 # Validator Staking
 
+## Abstract
+
 The staking module is responsible for handling validator and delegator related operations.
 
 ## Quick Start
 
-```
-## Start a local cluster
-$ bash ./deployment/localup/localup.sh all 3
-$ alias gnfd="./build/bin/gnfd"
-$ val=0xCd6D1332a09c29A8a5Fe5Ea4b485F63881f26999
-## query the the self delegation of a validator
-$ gnfd q staking delegation $val $val --node tcp://127.0.0.1:26750
-## query the validator info
-$ gnfd q staking validator $val --node tcp://127.0.0.1:26750
-## try self delegate 100BNB for validator0
-$ gnfd tx staking delegate $val 100000000000000000000BNB --from validator0 --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
-## try unbond 100BNB from validator0
-$ gnfd tx staking unbond $val 100000000000000000000BNB --from validator0 --home ./deployment/localup/.local/validator0 --keyring-backend test --node http://localhost:26750 -b block  -y
-## query the unbonding-delegation
-$ gnfd q staking unbonding-delegation $val $val --node tcp://127.0.0.1:26750
+### Create a New Validator
+
+To become a validator, a `create-validator` proposal should be submitted and adopted by the majority of the current
+validators.
+
+#### Grant delegate authorization
+
+The self delegator account of the new validator should grant the delegate authorization to the gov module account, make
+sure the spend limit should be no less than the value for creating validator, and the allowed validator should be the
+operator address of the new validator. The gov module account of Greenfield
+is `0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2`.
+
+```sh
+gnfd tx authz grant ${grantee} delegate --sepend-limit ${coins} --allowed-validators ${valAddr} --from ${key} --node ${node}
 ```
 
-## Query
+${key} is the name of local key.
+
+${grantee} specifies the address of the grantee. In this case, it is `0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2`.
+
+${coins} defines the coins you want to grant, for example, `10000000000000000000000BNB`.
+
+${valAddr} defines the address of the validator you want to create.
+
+For mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
+
+for testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
+
+Example:
+
+```sh
+gnfd tx authz grant 0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2 delegate --sepend-limit 10000000000000000000000BNB --allowed-validators myvaladdr --from mykey
+```
+
+#### Submit create-validator proposal
+
+Use `gov submit-proposal` command to submit a create-validator proposal.
+
+```sh
+gnfd tx gov submit-proposal create-validator.json --from ${key} --node ${node}
+```
+
+Example:
+
+The content of create-validator.json:
+
+```json
+{
+  "messages": [
+    {
+      "@type": "/cosmos.staking.v1beta1.MsgCreateValidator",
+      "description": {
+        "moniker": "validator",
+        "identity": "",
+        "website": "",
+        "security_contact": "",
+        "details": ""
+      },
+      "commission": {
+        "rate": "0.070000000000000000",
+        "max_rate": "1.000000000000000000",
+        "max_change_rate": "0.010000000000000000"
+      },
+      "min_self_delegation": "1000000000000000000000",
+      "delegator_address": "0x6D967dc83b625603c963713eABd5B43A281E595e",
+      "validator_address": "0x6D967dc83b625603c963713eABd5B43A281E595e",
+      "pubkey": {
+        "@type": "/cosmos.crypto.ed25519.PubKey",
+        "key": "POIf1u/xC0RoHhD5c5qWszVLnjuhSVlgyrhoIriSjf0="
+      },
+      "value": {
+        "denom": "BNB",
+        "amount": "10000000000000000000000"
+      },
+      "from": "0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",
+      "relayer_address": "0xBefD69cb71403DF7BA20310FB216e1Fb7bAC6321",
+      "challenger_address": "0xc6C51ae1d83257B833Fe64413cf3d30F2F624ae7",
+      "bls_key": "ac1e598ae0ccbeeaafa31bc6faefa85c2ae3138699cac79169cd718f1a38445201454ec092a86f200e08a15266bdc600",
+      "bls_proof": "88faf4af49c73ff6647465e8791ad861e5da080157beadaab415a0b09bb431514810e30500ac0806fc7eefbf39b545e6161ef40f9e68a196382ed0b0f1bdde6507a94b03347b12f620feed99990d50c3c3e01b906b553c5cce79fb37cf09e4c6"
+    }
+  ],
+  "metadata": "4pIMOgIGx1vZGU=",
+  "deposit": "1000000000000000000BNB"
+}
+```
+
+```sh
+gnfd tx gov submit-proposal create-validator.json --from mykey --gas auto
+```
+
+#### Vote on the proposal
+
+The current validators can use `gov vote` command to vote on the proposal.
+
+```sh
+gnfd tx gov vote ${proposal_id} --from ${key} --node ${node}
+```
+
+${proposal_id} specifies the id of the proposal submitted.
+
+Example:
+
+```sh
+gnfd tx gov vote 1 yes --from mykey
+```
+
+#### Tally and execute automatically
+
+Once the proposal's voting period is over, the votes for the create-validator proposal would be tallied. If the proposal
+is passed, the create-validator message in the proposal would be executed automatically.
+
+### Steps for impeaching a malicious validator.
+
+If a validator doesn't behave well, anyone can submit an impeach-validator proposal, if the proposal adopted by the
+majority of the current validators, the malicious validator would be jailed forever.
+
+#### Submit an impeach-validator proposal
+
+Use `gov submit-proposal` command to submit an impeach-validator proposal.
+
+```sh
+gnfd tx gov submit-proposal impeach-validator.json --from ${key} --node ${node}
+```
+
+Example:
+
+The content of impeach-validator.json:
+
+```json
+{
+  "messages": [
+    {
+      "@type": "/cosmos.slashing.v1beta1.MsgImpeach",
+      "from": "0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",
+      "validator_address": "0x6D967dc83b625603c963713eABd5B43A281E595e"
+    }
+  ],
+  "metadata": "4pIMOgIGx1vZGU=",
+  "deposit": "1000000000000000000BNB"
+}
+```
+
+```sh
+gnfd tx gov submit-proposal impeach-validator.json --from mykey --gas auto
+```
+
+#### Vote on the proposal
+
+The current validators can use `gov vote` command to vote on the proposal.
+
+```sh
+gnfd tx gov vote ${proposal_id} --from ${key} --node ${node}
+```
+
+Example:
+
+```sh
+gnfd tx gov vote 2 yes --from mykey
+```
+
+#### Tally and execute automatically
+
+Once the proposal's voting period is over, the votes for the impeach-validator proposal would be tallied. If the
+proposal
+is passed, the impeach-validator message in the proposal would be executed automatically.
+
+## Detailed CLI
+
+### Query
 
 The CLI `query` commands allow users to query `staking` state.
 
@@ -34,7 +187,7 @@ The CLI `query` commands allow users to query `staking` state.
 gnfd query staking --help
 ```
 
-### delegation
+#### delegation
 
 The `delegation` command allows users to query a delegation based on address and validator address.
 
@@ -60,7 +213,7 @@ delegation:
   validator_address: 0xCd6D1332a09c29A8a5Fe5Ea4b485F63881f26999
 ```
 
-### historical-info
+#### historical-info
 
 The `historical-info` command allows users to query historical info at given height.
 
@@ -179,7 +332,7 @@ valset:
     unbonding_time: "1970-01-01T00:00:00Z"
 ```
 
-### params
+#### params
 
 The `params` command allows users to query the current staking parameters information.
 
@@ -205,7 +358,7 @@ min_self_delegation: "1"
 unbonding_time: 1814400s
 ```
 
-### pool
+#### pool
 
 The `pool` command allows users to query the current staking pool values.
 
@@ -226,9 +379,10 @@ bonded_tokens: "30000000000000000000000000"
 not_bonded_tokens: "0"
 ```
 
-### unbonding-delegation
+#### unbonding-delegation
 
-The `unbonding-delegation` command allows users to query an unbonding-delegation record based on delegator and validator address.
+The `unbonding-delegation` command allows users to query an unbonding-delegation record based on delegator and validator
+address.
 
 ```sh
 gnfd query staking unbonding-delegation [delegator-addr] [validator-addr] [flags]
@@ -252,7 +406,7 @@ entries:
 validator_address: 0xCd6D1332a09c29A8a5Fe5Ea4b485F63881f26999
 ```
 
-### validator
+#### validator
 
 The `validator` command allows users to query a validator.
 
@@ -297,7 +451,7 @@ unbonding_height: "0"
 unbonding_time: "1970-01-01T00:00:00Z"
 ```
 
-### validators
+#### validators
 
 The `validators` command allows users to query for all validators.
 
@@ -398,11 +552,11 @@ validators:
     unbonding_time: "1970-01-01T00:00:00Z"
 ```
 
-## Transactions
+### Transactions
 
 The CLI `tx` commands allow users to send `staking` related transactions.
 
-### delegate
+#### delegate
 
 The `delegate` command allows users to delegate liquid tokens to a validator, in the early stage, only self-delegate is
 supported.
@@ -417,7 +571,7 @@ Example:
 gnfd tx staking delegate 0x91D7d.. 1000000000000000000000BNB --from mykey
 ```
 
-### edit-validator
+#### edit-validator
 
 The `edit-validator` command allows the user to edit an existing validator account.
 
@@ -431,7 +585,7 @@ Example:
 gnfd tx staking edit-validator --addr-relayer 0x91D7d.. --from mykey
 ```
 
-### unbond
+#### unbond
 
 The `unbond` command allows the user to unbond shares from a validator.
 
@@ -445,151 +599,3 @@ Example:
 gnfd tx staking unbond 0x91D7d.. 100000000000000000000BNB --from mykey
 ```
 
-## Steps for creating a new validator
-
-To become a validator, a create-validator proposal should be submitted and adopted by the majority of the current validators.
-
-### Grant delegate authorization
-
-The self delegator account of the new validator should grant the delegate authorization to the gov module account, make
-sure the spend limit should be no less than the value for creating validator, and the allowed validator should be the
-operator address of the new validator. The gov module account of Greenfield is "0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2".
-
-```sh
-gnfd tx authz grant <grantee> delegate --sepend-limit <value> --allowed-validators <valAddr> [flags]
-```
-
-Example:
-
-```sh
-gnfd tx authz grant 0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2 delegate --sepend-limit 10000000000000000000000BNB --allowed-validators myvaladdr --from mykey
-```
-
-### Submit create-validator proposal
-
-Use `gov submit-proposal` command to submit a create-validator proposal.
-
-```sh
-gnfd tx gov submit-proposal create-validator.json [flags]
-```
-
-Example:
-
-The content of create-validator.json:
-
-```json
-{
-  "messages":[
-  {
-    "@type":"/cosmos.staking.v1beta1.MsgCreateValidator",
-    "description":{
-      "moniker":"validator",
-      "identity":"",
-      "website":"",
-      "security_contact":"",
-      "details":""
-    },
-    "commission":{
-      "rate":"0.070000000000000000",
-      "max_rate":"1.000000000000000000",
-      "max_change_rate":"0.010000000000000000"
-    },
-    "min_self_delegation":"1000000000000000000000",
-    "delegator_address":"0x6D967dc83b625603c963713eABd5B43A281E595e",
-    "validator_address":"0x6D967dc83b625603c963713eABd5B43A281E595e",
-    "pubkey":{
-      "@type":"/cosmos.crypto.ed25519.PubKey",
-      "key":"POIf1u/xC0RoHhD5c5qWszVLnjuhSVlgyrhoIriSjf0="
-    },
-    "value":{
-      "denom":"BNB",
-      "amount":"10000000000000000000000"
-    },
-    "from":"0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",
-    "relayer_address":"0xBefD69cb71403DF7BA20310FB216e1Fb7bAC6321",
-    "challenger_address":"0xc6C51ae1d83257B833Fe64413cf3d30F2F624ae7",
-    "bls_key":"ac1e598ae0ccbeeaafa31bc6faefa85c2ae3138699cac79169cd718f1a38445201454ec092a86f200e08a15266bdc600",
-    "bls_proof":"88faf4af49c73ff6647465e8791ad861e5da080157beadaab415a0b09bb431514810e30500ac0806fc7eefbf39b545e6161ef40f9e68a196382ed0b0f1bdde6507a94b03347b12f620feed99990d50c3c3e01b906b553c5cce79fb37cf09e4c6"
-  }
-],
-  "metadata": "4pIMOgIGx1vZGU=",
-  "deposit": "1000000000000000000BNB"
-}
-```
-
-```sh
-gnfd tx gov submit-proposal create-validator.json --from mykey --gas auto
-```
-
-### Vote on the proposal
-
-The current validators can use `gov vote` command to vote on the proposal.
-
-```sh
-gnfd tx gov vote [proposal-id] [option] [flags]
-```
-
-Example:
-
-```sh
-gnfd tx gov vote 1 yes --from mykey
-```
-
-### Tally and execute automatically
-
-Once the proposal's voting period is over, the votes for the create-validator proposal would be tallied. If the proposal
-is passed, the create-validator message in the proposal would be executed automatically.
-
-## Steps for impeaching a malicious validator.
-
-If a validator doesn't behave well, anyone can submit an impeach-validator proposal, if the proposal adopted by the
-majority of the current validators, the malicious validator would be jailed forever.
-
-### Submit an impeach-validator proposal
-
-Use `gov submit-proposal` command to submit an impeach-validator proposal.
-
-```sh
-gnfd tx gov submit-proposal impeach-validator.json [flags]
-```
-
-Example:
-
-The content of impeach-validator.json:
-
-```json
-{
-  "messages":[
-    {
-      "@type":"/cosmos.slashing.v1beta1.MsgImpeach",
-      "from":"0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2",
-      "validator_address":"0x6D967dc83b625603c963713eABd5B43A281E595e"
-    }
-  ],
-  "metadata": "4pIMOgIGx1vZGU=",
-  "deposit": "1000000000000000000BNB"
-}
-```
-
-```sh
-gnfd tx gov submit-proposal impeach-validator.json --from mykey --gas auto
-```
-
-### Vote on the proposal
-
-The current validators can use `gov vote` command to vote on the proposal.
-
-```sh
-gnfd tx gov vote [proposal-id] [option] [flags]
-```
-
-Example:
-
-```sh
-gnfd tx gov vote 2 yes --from mykey
-```
-
-### Tally and execute automatically
-
-Once the proposal's voting period is over, the votes for the impeach-validator proposal would be tallied. If the proposal
-is passed, the impeach-validator message in the proposal would be executed automatically.

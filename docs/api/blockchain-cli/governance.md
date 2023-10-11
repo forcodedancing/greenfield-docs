@@ -26,6 +26,8 @@ With the id of a proposal, you can query the details of id by the following comm
 gnfd query gov proposal ${proposal_id} --node ${node}
 ```
 
+${proposal_id} specifies the id of the proposal you want to query.
+
 To query from mainnet, the ${node} should be `https://greenfield-chain.bnbchain.org:443`;
 
 to query from testnet, the ${node} should be `https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443`.
