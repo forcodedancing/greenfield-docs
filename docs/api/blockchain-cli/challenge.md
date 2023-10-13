@@ -24,7 +24,7 @@ ${key} is the name of local key.
 
 ${bucket-name} and ${object-name} specify which object you want to submit challenge for.
 
-${random-index} ${segment-index} specify which segment of the object you want to submit challenge for. If you do not know the index, you and set ${random-index} to `true`.
+${random-index} ${segment-index} specify which segment of the object you want to submit challenge for. If you do not know the index, you can set ${random-index} to `true`.
 
 ${node} is the rpc address of a Greenfield node.
 
@@ -98,9 +98,9 @@ params:
 
 #### latest-attested-challenges  
 
-The `latest-attested-challenges` command allows users to query the latest challenges that have been attested by the user.
+The `latest-attested-challenges` command allows users to query the latest challenges that have been attested by validators.
 
-Be noted, only the latest `attestation_kept_count` challenged will be return.
+Be noted, only the latest `attestation_kept_count` challenges will be returned.
 
 ```sh
 gnfd query challenge latest-attested-challenges [flags]
@@ -123,9 +123,10 @@ Example Output:
 
 #### attested-challenge
 
-The `attested-challenge` command allows users to query a specific challenge that have been attested by the user.
+The `attested-challenge` command allows users to query a specific challenge that have been attested by validators.
 
-Be noted, only the latest `attestation_kept_count` challenged will be used to serve this query.
+Be noted, for the challenge results will be pruned, only the challenge within the latest `attestation_kept_count` 
+challenges will be used to serve this query.
 
 ```sh
 gnfd query challenge attested-challenge [id] [flags]
@@ -198,4 +199,4 @@ However, be noted, the result is not kept forever, and only the latest `attestat
 gnfd query challenge latest-attested-challenges --node https://greenfield-chain.bnbchain.org:443 
 ```
 
-The result of the challenge can be queried using the `AttestedChallenge`, `LatestAttestedChallenges` methods through [GRPC swagger](https://greenfield-chain.bnbchain.org/openapi).
+The result of the challenge can be queried by the above query commands, or using the the `AttestedChallenge`, `LatestAttestedChallenges` methods through [GRPC swagger](https://greenfield-chain.bnbchain.org/openapi).

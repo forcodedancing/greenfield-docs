@@ -27,9 +27,9 @@ is `0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2`.
 gnfd tx authz grant ${grantee} delegate --sepend-limit ${coins} --allowed-validators ${valAddr} --from ${key} --node ${node}
 ```
 
-${key} is the name of local key.
+${key} is the name of the self delegator account's local key.
 
-${grantee} specifies the address of the grantee. In this case, it is `0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2`.
+${grantee} specifies the address of the grantee, which should be `0x7b5Fe22B5446f7C62Ea27B8BD71CeF94e03f3dF2`.
 
 ${coins} defines the coins you want to grant, for example, `10000000000000000000000BNB`.
 
@@ -118,6 +118,13 @@ The content of create-validator.json:
 
 ```sh
 gnfd tx gov submit-proposal create-validator.json --from mykey --gas auto
+```
+
+#### Create a new validator in one step
+You can also use the `create-validator` command to create a new validator in one step, this command will include the above two steps.
+
+```shell
+gnfd tx staking create-validator create-validator.json --from ${self-delegator-key} --node ${node}
 ```
 
 #### Vote on the proposal

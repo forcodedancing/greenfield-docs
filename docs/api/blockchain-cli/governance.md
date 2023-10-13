@@ -10,7 +10,7 @@ In Greenfield, users can submit proposals for on-chain governance.
 These proposals can include updates to blockchain parameters or cross-chain configurations, 
 or execution of some messages (e.g., create storage provider). 
 Once a proposal is submitted, it must be accompanied by a deposit that exceeds 
-the `Min Deposit` parameter (which is 10BNB on mainnet).
+the `Min Deposit` parameter (which is 1 BNB on the mainnet).
 If the deposit is not met, the proposal will not be open for voting. 
 However, the submitter is not required to provide the deposit in its entirety. 
 Other users can contribute to the deposit, and if the total deposit exceeds the Min Deposit parameter, 

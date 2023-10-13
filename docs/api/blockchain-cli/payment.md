@@ -104,13 +104,13 @@ The `query` commands allow users to query `payment` state.
 The `params` command allows users to query the params of the `payment` module.
 
 ```sh
-gnfd query bridge params [flags]
+gnfd query payment params [flags]
 ```
 
 Example:
 
 ```sh
-gnfd query bridge params --node https://greenfield-chain.bnbchain.org:443
+gnfd query payment params --node https://greenfield-chain.bnbchain.org:443
 ```
 
 #### show-payment-account

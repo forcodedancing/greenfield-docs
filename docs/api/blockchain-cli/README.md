@@ -22,7 +22,7 @@ aspects of the commands, such as gas prices or which node to broadcast to.
 Here is an example of a command a user might enter to interact with `gnfd` in order to send some tokens:
 
 ```bash
-gnfd tx bank send $MY_VALIDATOR_ADDRESS $RECIPIENT 1000BNB --gas auto
+gnfd tx bank send $MY_ADDRESS $RECIPIENT 1000BNB --gas auto
 ```
 
 The first four strings specify the command:
